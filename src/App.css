@@ -40,3 +40,30 @@
 button {
   font-size: calc(10px + 2vmin);
 }
+
+canvas#main-scene {
+  background-color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
+div#friendly-error {
+  position: absolute;
+  color: #fff;
+  right: 50%;
+  top: 50%;
+  font-size: 2em;
+}
+
+div#portfolio-parent {
+  position: absolute;
+  color: white;
+  min-height: 600em;
+}
+
+div#portfolio-header {
+  font-size: xx-large;
+}
