@@ -56,8 +56,8 @@ export const MainScene = () => {
             // Add objects
             // const ring = buildRing()
             // scene.add( ring );
-            const cube = buildCube();
-            scene.add( cube );
+            // const cube = buildCube();
+            // scene.add( cube );
             
             let starCount = 0;
             while (starCount < 300) {
@@ -100,8 +100,8 @@ export const MainScene = () => {
                 // ring.rotation.y += 0.005
                 // ring.rotation.z += 0.01
             
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
+                // cube.rotation.x += 0.01;
+                // cube.rotation.y += 0.01;
 
                 earth.rotation.y += 0.001
 
@@ -136,13 +136,13 @@ export const MainScene = () => {
         return star
     }
 
-    const buildCube = () => {
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-        var cube = new THREE.Mesh( geometry, material );
+    // const buildCube = () => {
+    //     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    //     var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+    //     var cube = new THREE.Mesh( geometry, material );
 
-        return cube
-    }
+    //     return cube
+    // }
 
     const buildRing = () => {
         const geometry = new THREE.TorusGeometry( 10, 3, 16, 100)
