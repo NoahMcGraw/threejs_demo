@@ -40,7 +40,8 @@ export const MainScene = () => {
         const mainSceneDiv = document.getElementById("main-scene");
         if (mainSceneDiv !== null) {
             var renderer = new THREE.WebGLRenderer({
-                canvas: mainSceneDiv
+                canvas: mainSceneDiv,
+                antialias: true
             });
             renderer.setPixelRatio( window.devicePixelRatio )
             renderer.setSize( window.innerWidth, window.innerHeight );
@@ -112,19 +113,23 @@ export const MainScene = () => {
                 }
                 camera.position.x = top * -0.2
                 camera.position.y = top * -0.02
-                console.log(camera.position)
             }
 
             // Add helpers
-            const gridHelper = new THREE.GridHelper(200, 50)
+            const gridHelper = new THREE.GridHelper(1000, 100, new THREE.Color("red"), new THREE.Color("green"))
             scene.add( gridHelper )
             // const lightHelper = new PointLightHelper(pointLight)
             // scene.add( lightHelper )
+            // const axes = new THREE.AxesHelper();
+            // axes.material = new THREE.MeshPhongMaterial()
+            // axes.material.depthTest = false;
+            // axes.renderOrder = 1;
+
+            const clock = new THREE.Clock()
 
             var animate = function () {
                 requestAnimationFrame( animate );
 
-                // ring.rotation.x += 0.01
                 ring.rotation.y += 0.0001
                 ring.rotation.z += 0.001
             
@@ -133,8 +138,21 @@ export const MainScene = () => {
 
                 earth.rotation.y += 0.001
 
-                asteroid.rotation.z += 0.001
-                asteroid.rotation.y += 0.005
+                // asteroid.rotation.z += 0.001
+                asteroid.rotation.y += 0.0005
+
+                const t = clock.getElapsedTime()
+
+                let asteroidFlag = asteroid.getObjectByName('asteroid-flag') as THREE.Mesh
+                if (typeof asteroidFlag !== 'undefined') {
+
+                    let pos = asteroidFlag.geometry.attributes.position;
+                    for (var i = 0; i < pos.count; i++) {
+                        asteroidFlag.geometry.attributes.position.setZ(i, 0.25 * Math.sin(asteroidFlag.geometry.attributes.position.getX(i) + t))
+                    }
+                }
+
+                asteroidFlag.geometry.attributes.position.needsUpdate = true
 
                 // controls.update()
             
@@ -180,11 +198,49 @@ export const MainScene = () => {
         )
         _asteroid.material.side = THREE.DoubleSide;
         _asteroid.position.set(325, 30, 22);
+
+        const _asteroidChildren = buildAsteroidChildren() as THREE.Mesh[];
+
+        _asteroidChildren.forEach(childNode => {
+            _asteroid.add(childNode)
+        });
+
         return _asteroid
     }
 
-    const buildSun = () => {
-        
+    const buildAsteroidChildren = (): THREE.Mesh[] => {
+        const childrenMeshes = [] as THREE.Mesh[];
+
+        // Construct all children of the asteroid asset.
+        const _flagPole = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.15, 0.15, 5, 12),
+            new THREE.MeshStandardMaterial({
+                color: new THREE.Color("gray")
+            })
+        )
+
+        _flagPole.position.set(0,6,0)
+        _flagPole.rotation.set(0,Math.PI / 2, 0)
+
+        const _flagTexture = new THREE.TextureLoader().load("/reactjs-flag.jpg")
+
+        const _flag = new THREE.Mesh(
+            new THREE.PlaneGeometry(4, 2, 15, 9),
+            new THREE.MeshStandardMaterial({
+                map: _flagTexture,
+                side: THREE.FrontSide
+            }),
+        )
+        _flag.material.side = THREE.DoubleSide
+        _flag.position.set(2,1.5,0)
+        _flag.rotation.set(-0.1, 0 ,0)
+        _flag.name = "asteroid-flag"
+
+        _flagPole.add(_flag)
+
+        childrenMeshes.push(_flagPole)
+
+        return childrenMeshes;
     }
 
     const buildStar = () => {
