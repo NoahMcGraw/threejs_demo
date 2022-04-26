@@ -54,10 +54,10 @@ export const MainScene = () => {
             scene.background = spaceTexture
 
             // Add objects
-            // const ring = buildRing()
-            // scene.add( ring );
-            // const cube = buildCube();
-            // scene.add( cube );
+            const ring = buildRing()
+            scene.add( ring );
+            const cube = buildCube();
+            scene.add( cube );
             
             let starCount = 0;
             while (starCount < 300) {
@@ -68,6 +68,9 @@ export const MainScene = () => {
 
             const earth = buildEarth()
             scene.add(earth)
+
+            const asteroid = buildAsteroid()
+            scene.add(asteroid)
 
             // Add light sources
             const pointLight = new THREE.PointLight(0Xffffff)
@@ -81,15 +84,40 @@ export const MainScene = () => {
             document.body.onscroll = function() {
                 const top = document.body.getBoundingClientRect().top;
                 
+                // camera.position.z = top * -0.02
+                if (camera.position.x >= asteroid.position.x && camera.position.x <= asteroid.position.x + 30) {
+                    
+                    const checkIsCloseToCenter = () => {
+                        var threshold = 0.2;
+                        
+                        var positionScreenSpace = asteroid.position.clone().project(camera);
+                        positionScreenSpace.setZ(0);
+                        
+                        var _isCloseToCenter = positionScreenSpace.length() < threshold;
+                        return _isCloseToCenter;
+                    }
+                    
+                    let isCloseToCenter = checkIsCloseToCenter()
+                    if (!isCloseToCenter) {
+                        camera.rotateY(-Math.PI / 360)
+                        isCloseToCenter = checkIsCloseToCenter()
+                    }
+                    else {
+                        camera.rotateY(Math.PI / 360)
+                        isCloseToCenter = checkIsCloseToCenter()
+                    }
+                }
+                else {
+                    camera.lookAt(0,0,0)
+                }
                 camera.position.x = top * -0.2
                 camera.position.y = top * -0.02
-                // camera.position.z = top * -0.02
-                camera.lookAt(0,0,0)
+                console.log(camera.position)
             }
 
             // Add helpers
-            // const gridHelper = new THREE.GridHelper(200, 50)
-            // scene.add( gridHelper )
+            const gridHelper = new THREE.GridHelper(200, 50)
+            scene.add( gridHelper )
             // const lightHelper = new PointLightHelper(pointLight)
             // scene.add( lightHelper )
 
@@ -97,13 +125,16 @@ export const MainScene = () => {
                 requestAnimationFrame( animate );
 
                 // ring.rotation.x += 0.01
-                // ring.rotation.y += 0.005
-                // ring.rotation.z += 0.01
+                ring.rotation.y += 0.0001
+                ring.rotation.z += 0.001
             
-                // cube.rotation.x += 0.01;
-                // cube.rotation.y += 0.01;
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
 
                 earth.rotation.y += 0.001
+
+                asteroid.rotation.z += 0.001
+                asteroid.rotation.y += 0.005
 
                 // controls.update()
             
@@ -115,15 +146,45 @@ export const MainScene = () => {
     }
 
     const buildEarth = () => {
-        const earthTexture = new THREE.TextureLoader().load('/earth_texture.jpg')
-        const earth = new THREE.Mesh(
+        const _texture = new THREE.TextureLoader().load('/earth_texture.jpg')
+        const _normalMap = new THREE.TextureLoader().load('/earth_normal_map.png')
+        const _earth = new THREE.Mesh(
             new THREE.SphereGeometry(6, 32, 32),
             new THREE.MeshStandardMaterial({
-                map: earthTexture
+                map: _texture,
+                normalMap: _normalMap
             })
         )
-        earth.rotation.y = Math.PI / 6
-        return earth
+        _earth.rotation.y = Math.PI / 6
+        return _earth
+    }
+
+    const buildAsteroid = () => {
+        const _texture = new THREE.TextureLoader().load('/asteroid/Rock029_2K_Color.png')
+        const _normalMap = new THREE.TextureLoader().load('/asteroid/Rock029_2K_NormalDX.png')
+        const _aoMap = new THREE.TextureLoader().load('/asteroid/Rock029_2K_AmbientOcclusion.png')
+        const _displacementMap = new THREE.TextureLoader().load('/asteroid/Rock029_2K_Displacement.png')
+        const _roughMap = new THREE.TextureLoader().load('/asteroid/Rock029_2K_Roughness.png')
+        const _asteroid = new THREE.Mesh(
+            new THREE.SphereGeometry(5, 32, 32),
+            new THREE.MeshStandardMaterial({
+                map: _texture,
+                normalMap: _normalMap,
+                aoMap: _aoMap,
+                aoMapIntensity: 1,
+                displacementMap: _displacementMap,
+                displacementScale: 0.5,
+                roughnessMap: _roughMap,
+                roughness: 1.0
+            })
+        )
+        _asteroid.material.side = THREE.DoubleSide;
+        _asteroid.position.set(325, 30, 22);
+        return _asteroid
+    }
+
+    const buildSun = () => {
+        
     }
 
     const buildStar = () => {
@@ -136,18 +197,22 @@ export const MainScene = () => {
         return star
     }
 
-    // const buildCube = () => {
-    //     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    //     var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-    //     var cube = new THREE.Mesh( geometry, material );
+    const buildCube = () => {
+        const cubeTexture = new THREE.TextureLoader().load('/clarinet_profile.jpg')
+        var geometry = new THREE.BoxGeometry( 5, 5, 5 );
+        var material = new THREE.MeshStandardMaterial( { map: cubeTexture} );
+        var cube = new THREE.Mesh( geometry, material );
 
-    //     return cube
-    // }
+        cube.position.set(30, 0, 0)
+
+        return cube
+    }
 
     const buildRing = () => {
-        const geometry = new THREE.TorusGeometry( 10, 3, 16, 100)
-        const material = new THREE.MeshStandardMaterial({ color: 0xFF637})
+        const geometry = new THREE.TorusGeometry( 20, 0.75, 16, 100)
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true})
         const ring = new THREE.Mesh( geometry, material )
+        ring.rotation.x = Math.PI / 2
         
         return ring
     }
